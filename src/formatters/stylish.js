@@ -1,14 +1,19 @@
+// src/formatters/stylish.js
 import _ from 'lodash';
 
 const indentSize = 4;
 
-const getIndent = (depth, type = ' ') => {
-  const spacesCount = Math.max(indentSize * depth - 2, 0);
-  const spaces = ' '.repeat(spacesCount);
+// Функция для получения отступа для строк с символами '+' и '-'
+const getLineIndent = (depth, type = ' ') => {
   if (type === ' ') {
-    return spaces + ' ';
+    return ' '.repeat(indentSize * depth);
   }
-  return spaces + type;
+  return ' '.repeat(indentSize * depth - 2) + type + ' ';
+};
+
+// Функция для получения отступа для значений внутри объектов
+const getValueIndent = (depth) => {
+  return ' '.repeat(indentSize * depth);
 };
 
 const formatValue = (value, depth) => {
@@ -19,9 +24,9 @@ const formatValue = (value, depth) => {
   }
 
   const entries = Object.entries(value).map(
-    ([key, val]) => `${getIndent(depth + 1)}${key}: ${formatValue(val, depth + 1)}`
+    ([key, val]) => `${getValueIndent(depth + 1)}${key}: ${formatValue(val, depth + 1)}`
   );
-  return `{\n${entries.join('\n')}\n${getIndent(depth)}}`;
+  return `{\n${entries.join('\n')}\n${getValueIndent(depth)}}`;
 };
 
 const formatStylish = (diff, depth = 1) => {
@@ -29,21 +34,22 @@ const formatStylish = (diff, depth = 1) => {
     const { key, type, value, lastValue, children } = node;
     switch (type) {
       case 'added':
-        return `${getIndent(depth, '+')} ${key}: ${formatValue(value, depth)}`;
+        return `${getLineIndent(depth, '+')}${key}: ${formatValue(value, depth)}`;
       case 'removed':
-        return `${getIndent(depth, '-')} ${key}: ${formatValue(value, depth)}`;
+        return `${getLineIndent(depth, '-')}${key}: ${formatValue(value, depth)}`;
       case 'unchanged':
-        return `${getIndent(depth, ' ')} ${key}: ${formatValue(value, depth)}`;
+        return `${getLineIndent(depth, ' ')}${key}: ${formatValue(value, depth)}`;
       case 'updated':
-        return `${getIndent(depth, '-')} ${key}: ${formatValue(lastValue, depth)}\n${getIndent(depth, '+')} ${key}: ${formatValue(value, depth)}`;
+        return `${getLineIndent(depth, '-')}${key}: ${formatValue(lastValue, depth)}\n${getLineIndent(depth, '+')}${key}: ${formatValue(value, depth)}`;
       case 'nested':
-        return `${getIndent(depth, ' ')} ${key}: ${formatStylish(children, depth + 1)}`;
+        return `${getLineIndent(depth, ' ')}${key}: ${formatStylish(children, depth + 1)}`;
       default:
         throw new Error(`Unknown node type: ${type}`);
     }
   });
 
-  return `{\n${lines.join('\n')}\n${getIndent(depth - 1)}}`;
+  const closingIndent = ' '.repeat(indentSize * (depth - 1));
+  return `{\n${lines.join('\n')}\n${closingIndent}}`;
 };
 
 export default formatStylish;
