@@ -22,7 +22,9 @@ const genDiff = (filepath1, filepath2, format = 'stylish') => {
         return { key, type: 'nested', children: buildDiff(obj1[key], obj2[key]) };
       }
       if (!_.isEqual(obj1[key], obj2[key])) {
-        return { key, value: obj2[key], lastValue: obj1[key], type: 'updated' };
+        return {
+          key, value: obj2[key], lastValue: obj1[key], type: 'updated',
+        };
       }
       return { key, value: obj1[key], type: 'unchanged' };
     });

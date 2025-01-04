@@ -8,13 +8,11 @@ const getLineIndent = (depth, type = ' ') => {
   if (type === ' ') {
     return ' '.repeat(indentSize * depth);
   }
-  return ' '.repeat(indentSize * depth - 2) + type + ' ';
+  return `${' '.repeat(indentSize * depth - 2) + type} `;
 };
 
 // Функция для получения отступа для значений внутри объектов
-const getValueIndent = (depth) => {
-  return ' '.repeat(indentSize * depth);
-};
+const getValueIndent = (depth) => ' '.repeat(indentSize * depth);
 
 const formatValue = (value, depth) => {
   if (!_.isObject(value)) {
@@ -24,14 +22,16 @@ const formatValue = (value, depth) => {
   }
 
   const entries = Object.entries(value).map(
-    ([key, val]) => `${getValueIndent(depth + 1)}${key}: ${formatValue(val, depth + 1)}`
+    ([key, val]) => `${getValueIndent(depth + 1)}${key}: ${formatValue(val, depth + 1)}`,
   );
   return `{\n${entries.join('\n')}\n${getValueIndent(depth)}}`;
 };
 
 const formatStylish = (diff, depth = 1) => {
   const lines = diff.map((node) => {
-    const { key, type, value, lastValue, children } = node;
+    const {
+      key, type, value, lastValue, children,
+    } = node;
     switch (type) {
       case 'added':
         return `${getLineIndent(depth, '+')}${key}: ${formatValue(value, depth)}`;
