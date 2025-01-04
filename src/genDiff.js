@@ -8,38 +8,27 @@ const genDiff = (filepath1, filepath2, format = 'stylish') => {
 
   const formatFunction = getFormatter(format);
 
-  const keys = _.sortBy([...new Set([...Object.keys(data1), ...Object.keys(data2)])]);
+  const buildDiff = (obj1, obj2) => {
+    const keys = _.sortBy([...new Set([...Object.keys(obj1), ...Object.keys(obj2)])]);
 
-  const diff = keys.map((key) => {
-    if (!(key in data2)) {
-      return {
-        key,
-        value: data1[key],
-        type: 'removed',
-      };
-    }
-    if (!(key in data1)) {
-      return {
-        key,
-        value: data2[key],
-        type: 'added',
-      };
-    }
-    if (data1[key] !== data2[key]) {
-      return {
-        key,
-        value: data2[key],
-        lastValue: data1[key],
-        type: 'updated',
-      };
-    }
-    return {
-      key,
-      value: data1[key],
-      type: 'unchanged',
-    };
-  });
+    return keys.map((key) => {
+      if (!_.has(obj2, key)) {
+        return { key, value: obj1[key], type: 'removed' };
+      }
+      if (!_.has(obj1, key)) {
+        return { key, value: obj2[key], type: 'added' };
+      }
+      if (_.isObject(obj1[key]) && _.isObject(obj2[key])) {
+        return { key, type: 'nested', children: buildDiff(obj1[key], obj2[key]) };
+      }
+      if (!_.isEqual(obj1[key], obj2[key])) {
+        return { key, value: obj2[key], lastValue: obj1[key], type: 'updated' };
+      }
+      return { key, value: obj1[key], type: 'unchanged' };
+    });
+  };
 
+  const diff = buildDiff(data1, data2);
   return formatFunction(diff);
 };
 

@@ -1,16 +1,35 @@
-const formatStylish = (diff) => ['{', ...diff.map((node) => {
-  switch (node.type) {
-    case 'removed':
-      return `  - ${node.key}: ${node.value}`;
-    case 'added':
-      return `  + ${node.key}: ${node.value}`;
-    case 'unchanged':
-      return `    ${node.key}: ${node.value}`;
-    case 'updated':
-      return `  - ${node.key}: ${node.lastValue}\n  + ${node.key}: ${node.value}`;
-    default:
-      return null;
-  }
-}).filter(Boolean), '}'].join('\n');
+import _ from 'lodash';
+
+const formatStylish = (diff, depth = 1) => {
+  const indent = '    '.repeat(depth - 1);
+  const bracketIndent = depth > 1 ? '    '.repeat(depth - 2) : '';
+
+  const formatValue = (value, currentDepth) => {
+    if (!_.isObject(value)) return value;
+    const entries = Object.entries(value).map(
+      ([key, val]) => `${'    '.repeat(currentDepth)}${key}: ${formatValue(val, currentDepth + 1)}`
+    );
+    return `{\n${entries.join('\n')}\n${'    '.repeat(currentDepth - 1)}}`;
+  };
+
+  const lines = diff.map((node) => {
+    switch (node.type) {
+      case 'removed':
+        return `${indent}  - ${node.key}: ${formatValue(node.value, depth)}`;
+      case 'added':
+        return `${indent}  + ${node.key}: ${formatValue(node.value, depth)}`;
+      case 'unchanged':
+        return `${indent}    ${node.key}: ${formatValue(node.value, depth)}`;
+      case 'updated':
+        return `${indent}  - ${node.key}: ${formatValue(node.lastValue, depth)}\n${indent}  + ${node.key}: ${formatValue(node.value, depth)}`;
+      case 'nested':
+        return `${indent}    ${node.key}: ${formatStylish(node.children, depth + 1)}`;
+      default:
+        throw new Error(`Unknown node type: ${node.type}`);
+    }
+  });
+
+  return `{\n${lines.join('\n')}\n${bracketIndent}}`;
+};
 
 export default formatStylish;
