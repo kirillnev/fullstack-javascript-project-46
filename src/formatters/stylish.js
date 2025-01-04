@@ -6,9 +6,9 @@ const getIndent = (depth, type = ' ') => {
   const spacesCount = Math.max(indentSize * depth - 2, 0);
   const spaces = ' '.repeat(spacesCount);
   if (type === ' ') {
-    return spaces + '  ';
+    return spaces + ' ';
   }
-  return spaces + type + ' ';
+  return spaces + type;
 };
 
 const formatValue = (value, depth) => {
