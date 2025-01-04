@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 const formatStylish = (diff, depth = 1) => {
   const indent = '    '.repeat(depth - 1);
   const closingIndent = '    '.repeat(depth - 1);
