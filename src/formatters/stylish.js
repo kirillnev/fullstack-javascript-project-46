@@ -29,3 +29,5 @@ const formatStylish = (diff, depth = 1) => {
 
   return `{\n${lines.join('\n')}\n${closingIndent}}`;
 };
+
+export default formatStylish;
